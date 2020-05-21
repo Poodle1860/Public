@@ -1,0 +1,20 @@
+from bs4 import BeautifulSoup
+import requests
+import pandas as pd
+df = pd.DataFrame()
+
+result = requests.get('https://www.wykop.pl/tag/znaleziska/koronawirus/wszystkie/next/link-5512705/')
+src = result.content
+soup = BeautifulSoup(src, 'lxml')
+
+general = soup.find_all('div', {'class' : 'lcontrast m-reset-margin'})
+
+for each in general:
+    each_date = each.find('div', {'class' : 'row elements'}).span.time['datetime']
+    each_title = each.find('h2').a.text
+    each_descr = each.find('div', {'class' : 'description'}).p.a.text.strip()
+    each_link = each.find('h2').a['href']
+    
+    df = df.append(pd.DataFrame({'date' : each_date, 'title' : each_title, 'description' : each_descr, 'link' : each_link}, index = [0]), ignore_index = True)
+    
+#df.to_excel('wykop1.xlsx')   
