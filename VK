@@ -1,1 +1,54 @@
-import vk_api
+###token to serwisowy klucz dostepu z API VK###
+
+#https://api.vk.com/method/wall.get?access_token=964bc9d8964bc9d8964bc9d8d2963898889964b964bc9d8c963e563d15bef13a0d10d34&v=5.122&owner_id=-167505019
+
+import requests
+import time
+import csv
+
+def take_1000_posts():
+    token = '964bc9d8964bc9d8964bc9d8d2963898889964b964bc9d8c963e563d15bef13a0d10d34'
+    v = 5.122
+    owner_id = '-167505019' #ID grupy: Polska to MY Rdzenni Polacy nigdy goście !!
+    count = 100
+    offset = 0
+    all_posts = []
+    
+    while offset < 1000:
+        response = requests.get('https://api.vk.com/method/wall.get',
+                               params = {
+                                   'access_token': token,
+                                   'v': v,
+                                   'owner_id': owner_id,
+                                   'count':count,
+                                   'offset':offset
+                                })
+
+        data = response.json()['response']['items']
+        offset+=count
+        all_posts.extend(data)
+        time.sleep(1)
+    return all_posts
+
+
+def file_writer(data):
+    with open('vktest1.csv', 'w') as file:
+        a_pen = csv.writer(file, delimiter = ';')
+        a_pen.writerow(('likes', 'body', 'url'))
+        for post in data:
+            try:
+                if post['attachments'][0]['type']:
+                    img_url = post['attachments'][0]['photo']['sizes'][-1]['url']
+                else:
+                    img_url = 'pass'
+                a_pen.writerow((post['likes']['count'], post['text'], img_url))
+            except:
+                pass
+            
+
+all_posts = take_1000_posts()
+file_writer(all_posts)
+
+#autor
+#data
+#czlonkowie grupy?
